@@ -46,7 +46,6 @@ class Parser(ParserBase):
   def __init__(self, raw, request, **kw):
     self.raw = raw
     self.request = request
-    print(type(request))
 
 
   def fail(self, formatter, msg):
@@ -81,9 +80,6 @@ class Parser(ParserBase):
 
 
   def format(self, formatter):
-    print("request:\n%s" % self.request)
-    print("raw:\n%s" % self.raw)
-
     html = '''
 <script src="http://cdn.jsdelivr.net/jquery/1.11.1/jquery.min.js"></script>
 <script src="http://andreasbihlmaier.github.io/js/jquery.imagemapster.min.js"></script>
@@ -94,7 +90,6 @@ class Parser(ParserBase):
       return self.fail(formatter, 'Either picsrc or area line is missing')
 
     image_dict = self.line2dict(lines[0])
-    print("image_dict:\n%s" % image_dict)
     if not 'name' in image_dict:
       return self.fail(formatter, 'picsrc line is malformed')
     image_name = image_dict['name']
@@ -132,7 +127,6 @@ class Parser(ParserBase):
     areas = {}
     for line in lines[1:]:
       line_dict = self.line2dict(line)
-      print("line_dict:\n%s" % line_dict)
       if not 'name' in line_dict:
         return self.fail(formatter, 'area line is malformed')
       area_name = line_dict['name']
@@ -142,7 +136,6 @@ class Parser(ParserBase):
           return self.fail(formatter, '%s missing from %s line' % (attr, area_name))
         areas[area_name][attr] = line_dict[attr]
       areas[area_name]['description'] = self.parse_wiki_markup(formatter, line_dict['description'])
-    print("areas:\n%s" % areas)
 
     for area in areas:
       html += '<area shape="%(shape)s" coords="%(coords)s" target="%(name)s" href="#" />' % areas[area]
