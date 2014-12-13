@@ -1,7 +1,0 @@
-{{{#!InteractiveImageMap
-turtlebot_2_lg.png;;width=269
-kinect;;shape=poly;;coords=91,94,167,100,167,104,144,110,146,121,196,124,203,118,206,110,182,103,250,108,249,75,123,68,91,68,91,93;;tooltip=Kinect;;description=Driver: [[http://wiki.ros.org/openni_camera|openni_camera]] <<BR>> Data: [[http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html|sensor_msgs/PointCloud2]] <<BR>> Visualization: [[http://wiki.ros.org/rviz/DisplayTypes/PointCloud|rviz PointCloud]] <<BR>> Processing: [[http://wiki.ros.org/pcl|Point Cloud Library (PCL)]]
-turltebot_base;;shape=poly;;coords=16,240,17,292,33,308,60,320,91,326,124,329,156,329,194,325,226,315,249,297,253,287,254,242,233,224,54,215,28,228,16,240;;tooltip=Turtlebot base plattform;;description=See [[http://wiki.ros.org/turtlebot|ROS wiki]]
-}}}
-
-After attaching turltebot_2_lg.png to this page, the result should look and work like [[http://andreasbihlmaier.github.io/html/2014-10-30-ros_beginner_documentation.html]].
