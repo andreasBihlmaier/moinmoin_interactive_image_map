@@ -2,7 +2,7 @@
     MoinMoin - InteractiveImageMap parser
 
     This parser is used to create interactive image maps. Interactive refers to
-    mouse-over information and  on click dynamic change of description box on
+    mouse-over information and on click dynamic change of description box on
     same page.
 
     Syntax:
@@ -35,32 +35,32 @@ from MoinMoin.web.contexts import ScriptContext
 Dependencies = []
 
 html_template = '''
-<script src="//cdn.jsdelivr.net/jquery/1.11.1/jquery.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 <script src="//andreasbihlmaier.github.io/js/jquery.imagemapster.min.js"></script>
 
-<img id="%(image_id)s" src="%(imgurl)s" width=%(image_width)s usemap="#%(map_name)s">
+<img id="%(image_id)s" src="%(img_url)s" width=%(image_width)s usemap="#%(map_name)s">
 
 <map name="%(map_name)s">
 %(map_content)s
 </map>
 
-<div style="text-align: left; clear: both; width: %(image_width)spx; height: 200px; border: 1px solid black;" id="description"></div>
+<div style="text-align: left; clear: both; width: %(image_width)spx; height: 200px; border: 1px solid black;" id="description_%(image_id)s"></div>
 </div>
 
 <script type="text/javascript">
-var default_description = 'Explore image by mouseover. Click on highlighted part in order to get more information.';
-$('#description').html(default_description);
+var default_description_%(image_id)s = 'Explore image by mouseover. Click on highlighted part in order to get more information.';
+$('#description_%(image_id)s').html(default_description_%(image_id)s);
 
-var tooltip_map = {
+var tooltip_map_%(image_id)s = {
     %(tooltip_map)s
 };
-var description_map = {
+var description_map_%(image_id)s = {
     %(description_map)s
 };
 
-var image = $('#%(image_id)s');
+var image_%(image_id)s = $('#%(image_id)s');
 
-image.mapster(
+image_%(image_id)s.mapster(
 {
     fillOpacity: 0.2,
     fillColor: "00ff00",
@@ -71,16 +71,14 @@ image.mapster(
     singleSelect: true,
     mapKey: 'target',
     listKey: 'target',
-    //onMouseover: function (e) {
     onClick: function (e) {
         if (!e.selected) {
-            $('#description').html(default_description);
+            $('#description_%(image_id)s').html(default_description);
         } else {
-            $('#description').html(description_map[e.key]);
+            $('#description_%(image_id)s').html(description_map_%(image_id)s[e.key]);
         }
     },
     showToolTip: true,
-    //toolTipClose: ["tooltip-click", "area-click"],
     areas: [
         %(areas)s
         ]
@@ -110,18 +108,15 @@ class Parser(ParserBase):
     def fail(self, formatter, msg):
         """Output error message as reply to request."""
         output_msg = "%s ERROR: %s" % (self.parsername, msg)
-        try:
-            self.request.write(formatter.rawHTML(output_msg))
-        except:  # TODO catch non-HTML formatter
-            self.request.write(formatter.escapedText(output_msg))
+        self.request.write(output_msg)
 
     def line2dict(self, line):
-        """Return ';;' seperated 'key=val' tupples as dict."""
+        """Return ';;' separated 'key=val' tuples as dict."""
         d = {}
         items = line.split(';;')
         d['name'] = wikiutil.escape(items[0])
-        for splitter in items[1:]:
-            keyval = splitter.split('=')
+        for item in items[1:]:
+            keyval = item.split('=')
             if len(keyval) != 2:
                 return {}
             key, val = keyval
@@ -157,17 +152,17 @@ class Parser(ParserBase):
         image_dict.pop('name')
 
         if _is_URL(image_name):
-            imgurl = image_name
+            img_url = image_name
         else:
             pagename, attname = AttachFile.absoluteName(image_name, formatter.page.page_name)
-            imgurl = AttachFile.getAttachUrl(pagename, attname, self.request)
+            img_url = AttachFile.getAttachUrl(pagename, attname, self.request)
             attachment_fname = AttachFile.getFilename(self.request, pagename, attname)
 
             if not os.path.exists(attachment_fname):
                 return self.fail(formatter, '%s not attached to this page' % image_name)
 
         image_id = re.sub(r'\W+', '', image_name)
-        self.html_substs.update({'image_id': image_id, 'imgurl': imgurl})
+        self.html_substs.update({'image_id': image_id, 'img_url': img_url})
 
         if 'width' not in image_dict:
             return self.fail(formatter, 'width missing from picsrc line')
@@ -206,7 +201,7 @@ class Parser(ParserBase):
         for area in areas:
             tooltip_map_str += "%(name)s: '%(tooltip)s'," % areas[area]
             description_map_str += "%(name)s: '%(description)s'," % areas[area]
-            areas_str += '{key: "%(name)s", toolTip: tooltip_map["%(name)s"]},' % areas[area]
+            areas_str += ('{key: "%(name)s", toolTip: tooltip_map_' + image_id + '["%(name)s"]},') % areas[area]
         self.html_substs.update({'tooltip_map': tooltip_map_str,
                                  'description_map': description_map_str,
                                  'image_id': image_id,
@@ -217,6 +212,7 @@ class Parser(ParserBase):
         # If current formatter is a HTML formatter, output image map with formatter.rawHTML().
         # Otherwise just output image with formatter.image()
         try:
-            self.request.write(formatter.rawHTML(html))
+            final_content = formatter.rawHTML(html)
         except:  # TODO catch non-HTML formatter
-            self.request.write(formatter.image(TODO))
+            final_content = formatter.image('InteractiveImageMap only works with HTML pages.')
+        self.request.write(final_content)
