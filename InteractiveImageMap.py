@@ -210,9 +210,9 @@ class Parser(ParserBase):
         html = html_template % self.html_substs
 
         # If current formatter is a HTML formatter, output image map with formatter.rawHTML().
-        # Otherwise just output image with formatter.image()
+        # Otherwise just output error string
         try:
             final_content = formatter.rawHTML(html)
-        except:  # TODO catch non-HTML formatter
-            final_content = formatter.image('InteractiveImageMap only works with HTML pages.')
+        except:  # non-HTML formatter
+            final_content = 'InteractiveImageMap only works with HTML pages.'
         self.request.write(final_content)
